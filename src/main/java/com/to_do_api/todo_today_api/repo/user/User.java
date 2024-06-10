@@ -8,20 +8,15 @@ import jakarta.persistence.Id;
 @Entity
 public class User {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-
     private String username;
     private String salt;
     private String pass;
     private String email;
     private boolean logged_in;
 
-    public User() {
-        // Constructor
-    }
-
-    public User(int id, String username, String salt, String pass, String email, boolean logged_in) {
-        this.id = id;
+    public User(String username, String salt, String pass, String email, boolean logged_in) {
         this.username = username;
         this.salt = salt;
         this.pass = pass;
@@ -29,13 +24,8 @@ public class User {
         this.logged_in = logged_in;
     }
 
-    // Getters and Setters
     public int getId() {
         return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public String getUsername() {
