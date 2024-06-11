@@ -1,22 +1,30 @@
 package com.to_do_api.todo_today_api.userAccount;
-
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class PasswordComplexity {
-    private final String salt;
+    private String salt;
     private byte [] password;
 
     public PasswordComplexity(String password) {
         salt = generateSalt();
+        this.password = hashPassword(salt + password);
+    }
+
+    public PasswordComplexity(String salt, String password) {
+        this.salt = salt;
+        this.password = hashPassword(salt + password);
+    }
+
+    private byte [] hashPassword (String password) {
         try {
-            MessageDigest mDigest = MessageDigest.getInstance("SHA-256");
-            this.password = mDigest.digest((salt + password).getBytes());
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            return digest.digest(password.getBytes());
         } catch (NoSuchAlgorithmException e) {
-            // ? LOG: Failed to hash password
             e.printStackTrace();
         }
+
+        return null;
     }
 
     private String generateSalt() {
@@ -33,8 +41,7 @@ public class PasswordComplexity {
         return this.salt;
     }
 
-    public String getHashedPassword() {
-        String str = new String(password, StandardCharsets.UTF_8);
-        return str;
+    public byte [] getHashedPasswordByte() {
+        return password;
     }
 }

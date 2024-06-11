@@ -12,11 +12,15 @@ public class User {
     private int id;
     private String username;
     private String salt;
-    private String pass;
+    private byte [] pass;
     private String email;
     private boolean logged_in;
 
-    public User(String username, String salt, String pass, String email, boolean logged_in) {
+    public User() {
+
+    }
+    
+    public User(String username, String salt, byte [] pass, String email, boolean logged_in) {
         this.username = username;
         this.salt = salt;
         this.pass = pass;
@@ -44,11 +48,11 @@ public class User {
         this.salt = salt;
     }
 
-    public String getPass() {
+    public byte [] getPass() {
         return pass;
     }
 
-    public void setPass(String pass) {
+    public void setPass(byte [] pass) {
         this.pass = pass;
     }
 
