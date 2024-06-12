@@ -5,11 +5,10 @@ import org.json.JSONObject;
 
 import com.to_do_api.todo_today_api.repo.user.User;
 
-public class JSONToUser {
+public class JSONConversion {
     public static User getUserFromJson(JSONObject json) {
-        User user;
         try {
-            user = new User(json.getString("username"), json.getString("salt"), (byte [])json.get("password"), json.getString("email"), json.getBoolean("logged_in"));
+            User user = new User(json.getString("username"), json.getString("salt"), (byte [])json.get("password"), json.getString("email"), json.getBoolean("logged_in"));
             return user;
         } catch (JSONException e) {
             e.printStackTrace();

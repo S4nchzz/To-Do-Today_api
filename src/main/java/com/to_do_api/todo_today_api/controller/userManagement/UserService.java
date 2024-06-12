@@ -15,7 +15,6 @@ import com.to_do_api.todo_today_api.repo.user.User;
 import com.to_do_api.todo_today_api.userAccount.PasswordComplexity;
 
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 
@@ -42,7 +41,7 @@ public class UserService {
         return false;
     }
 
-    @PutMapping("/addUser")
+    @PostMapping("/addUser")
     public ResponseEntity<Boolean> addUser(@RequestBody String entity, @RequestHeader("Authorization") String token) {
         if (!localAuth(token)) {
             return ResponseEntity.ok(false);
@@ -57,13 +56,18 @@ public class UserService {
         updatedEntity.put("password", passComplex.getHashedPasswordByte());
         updatedEntity.put("logged_in", false);
 
-        repositoryUser.save(JSONToUser.getUserFromJson(updatedEntity));
+        try {
+            repositoryUser.save(JSONConversion.getUserFromJson(updatedEntity));
+        } catch (Exception e) {
+            // ? LOG: Failed to add user
+            return ResponseEntity.ok(false);
+        }
 
         return ResponseEntity.ok(true);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Boolean> login(@RequestBody() Map<String, Object> entry, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<Boolean> login(@RequestBody Map<String, Object> entry, @RequestHeader("Authorization") String token) {
         if (!localAuth(token)) {
             return ResponseEntity.ok(false);
         }
@@ -83,4 +87,5 @@ public class UserService {
 
         return ResponseEntity.ok(false);
     }
+
 }
