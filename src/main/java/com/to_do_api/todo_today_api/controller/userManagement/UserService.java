@@ -9,7 +9,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.to_do_api.todo_today_api.repo.TokenAutoGeneration;
 import com.to_do_api.todo_today_api.repo.auth_token.RepositoryTokens;
+import com.to_do_api.todo_today_api.repo.auth_user_logged_tokens.User_temp_tokens;
+import com.to_do_api.todo_today_api.repo.auth_user_logged_tokens.RepositoryAuthEachUser;
 import com.to_do_api.todo_today_api.repo.user.RepositoryUser;
 import com.to_do_api.todo_today_api.repo.user.User;
 import com.to_do_api.todo_today_api.userAccount.PasswordComplexity;
@@ -27,9 +30,14 @@ public class UserService {
 
     @Autowired
     private RepositoryTokens repositoryTokens;
+
+    @Autowired
+    private RepositoryAuthEachUser repositoryAuthEachUser;
+
+    private final TokenAutoGeneration tokenAutoGeneration;
     
     public UserService () {
-
+        this.tokenAutoGeneration = TokenAutoGeneration.getInstance();
     }
 
     public boolean localAuth(String token) {
@@ -67,7 +75,7 @@ public class UserService {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Boolean> login(@RequestBody Map<String, Object> entry, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<?> login(@RequestBody Map<String, Object> entry, @RequestHeader("Authorization") String token) {
         if (!localAuth(token)) {
             return ResponseEntity.ok(false);
         }
@@ -79,13 +87,16 @@ public class UserService {
         }
 
         PasswordComplexity passwordComplexity = new PasswordComplexity(user.getSalt(), (String)entry.get("password"));
-
+ 
         if (MessageDigest.isEqual(passwordComplexity.getHashedPasswordByte(), user.getPass()))  {
-            return ResponseEntity.ok(true);
+            String authEachUserToken = tokenAutoGeneration.generateToken();
+            repositoryAuthEachUser.save(new User_temp_tokens(authEachUserToken, user.getId()));
+
+            JSONObject tempUserAuth = new JSONObject();
+            tempUserAuth.put("tempUserAuthTkn", authEachUserToken);
+            return ResponseEntity.ok(tempUserAuth.toString());
         }
-       
 
         return ResponseEntity.ok(false);
     }
-
 }

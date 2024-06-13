@@ -6,17 +6,17 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
 @Entity
-public class Auth_Tokens {
+public class Auth_Api_Tokens {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private String token;
     
-    public Auth_Tokens() {
+    public Auth_Api_Tokens() {
 
     }
 
-    public Auth_Tokens(String token) {
+    public Auth_Api_Tokens(String token) {
         this.token = token;
     }
 
