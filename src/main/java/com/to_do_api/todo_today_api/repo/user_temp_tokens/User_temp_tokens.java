@@ -1,4 +1,4 @@
-package com.to_do_api.todo_today_api.repo.auth_user_logged_tokens;
+package com.to_do_api.todo_today_api.repo.user_temp_tokens;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -7,15 +7,15 @@ import jakarta.persistence.Id;
 public class User_temp_tokens {
     @Id
     private String token;
-    private int user_ID;
+    private int userID;
 
     public User_temp_tokens() {
-        
+
     }
 
-    public User_temp_tokens (String token, int user_id) {
+    public User_temp_tokens(String token, int userid) {
         this.token = token;
-        this.user_ID = user_id;
+        this.userID = userid;
     }
 
     public String getToken() {
@@ -25,12 +25,8 @@ public class User_temp_tokens {
     public void setToken(String token) {
         this.token = token;
     }
-    
-    public int getUser_ID() {
-        return user_ID;
-    }
-    
-    public void setUser_ID(int user_ID) {
-        this.user_ID = user_ID;
+
+    public int getUserID() {
+        return userID;
     }
 }

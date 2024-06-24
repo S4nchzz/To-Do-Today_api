@@ -10,11 +10,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.to_do_api.todo_today_api.repo.TokenAutoGeneration;
-import com.to_do_api.todo_today_api.repo.auth_token.RepositoryTokens;
-import com.to_do_api.todo_today_api.repo.auth_user_logged_tokens.User_temp_tokens;
-import com.to_do_api.todo_today_api.repo.auth_user_logged_tokens.RepositoryAuthEachUser;
+import com.to_do_api.todo_today_api.repo.auth_api_tokens.RepositoryTokens;
 import com.to_do_api.todo_today_api.repo.user.RepositoryUser;
 import com.to_do_api.todo_today_api.repo.user.User;
+import com.to_do_api.todo_today_api.repo.user_temp_tokens.RepositoryAuthTempTokens;
+import com.to_do_api.todo_today_api.repo.user_temp_tokens.User_temp_tokens;
 import com.to_do_api.todo_today_api.userAccount.PasswordComplexity;
 
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,7 +32,7 @@ public class UserService {
     private RepositoryTokens repositoryTokens;
 
     @Autowired
-    private RepositoryAuthEachUser repositoryAuthEachUser;
+    private RepositoryAuthTempTokens repositoryAuthTempTokens;
 
     private final TokenAutoGeneration tokenAutoGeneration;
     
@@ -90,7 +90,7 @@ public class UserService {
  
         if (MessageDigest.isEqual(passwordComplexity.getHashedPasswordByte(), user.getPass()))  {
             String authEachUserToken = tokenAutoGeneration.generateToken();
-            repositoryAuthEachUser.save(new User_temp_tokens(authEachUserToken, user.getId()));
+            repositoryAuthTempTokens.save(new User_temp_tokens(authEachUserToken, user.getId()));
 
             JSONObject tempUserAuth = new JSONObject();
             tempUserAuth.put("tempUserAuthTkn", authEachUserToken);

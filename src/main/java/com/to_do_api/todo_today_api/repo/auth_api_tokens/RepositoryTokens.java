@@ -1,4 +1,4 @@
-package com.to_do_api.todo_today_api.repo.auth_token;
+package com.to_do_api.todo_today_api.repo.auth_api_tokens;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

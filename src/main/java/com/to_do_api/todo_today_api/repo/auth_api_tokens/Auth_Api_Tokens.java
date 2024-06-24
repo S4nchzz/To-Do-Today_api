@@ -1,4 +1,4 @@
-package com.to_do_api.todo_today_api.repo.auth_token;
+package com.to_do_api.todo_today_api.repo.auth_api_tokens;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
