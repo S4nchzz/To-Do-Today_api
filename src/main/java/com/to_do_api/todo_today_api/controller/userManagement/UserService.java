@@ -2,6 +2,7 @@ package com.to_do_api.todo_today_api.controller.userManagement;
 
 import java.security.MessageDigest;
 import java.util.Map;
+import java.util.UUID;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.to_do_api.todo_today_api.repo.TokenAutoGeneration;
 import com.to_do_api.todo_today_api.repo.auth_api_tokens.RepositoryTokens;
+import com.to_do_api.todo_today_api.repo.keep_logged_tokens.Keep_Logged_Tokens;
+import com.to_do_api.todo_today_api.repo.keep_logged_tokens.RepositoryKeep_Logged_Tokens;
 import com.to_do_api.todo_today_api.repo.user.RepositoryUser;
 import com.to_do_api.todo_today_api.repo.user.User;
 import com.to_do_api.todo_today_api.repo.user_temp_tokens.RepositoryAuthTempTokens;
@@ -33,6 +36,9 @@ public class UserService {
 
     @Autowired
     private RepositoryAuthTempTokens repositoryAuthTempTokens;
+
+    @Autowired
+    private RepositoryKeep_Logged_Tokens repositoryKeep_Logged_Tokens;
 
     private final TokenAutoGeneration tokenAutoGeneration;
     
@@ -98,5 +104,33 @@ public class UserService {
         }
 
         return ResponseEntity.ok(false);
+    }
+
+    @PostMapping("/generateKeepLoggedTkn")
+    public ResponseEntity<?> generateKeepLoggedToken (@RequestHeader("Authorization") String token) {
+        UUID uuid = UUID.randomUUID();
+
+        token = token.replace("Bearer ", "");
+        User_temp_tokens user_temp_tokens = repositoryAuthTempTokens.getUserByToken(token);
+
+        if (user_temp_tokens == null) {
+            return ResponseEntity.ok("");
+        }
+
+        repositoryKeep_Logged_Tokens.save(new Keep_Logged_Tokens(uuid.toString(), user_temp_tokens.getUserID()));
+        
+        JSONObject jsonResponse = new JSONObject();
+        jsonResponse.put("KeepLoggedToken", uuid.toString());
+        
+        return ResponseEntity.ok(jsonResponse.toString());
+    }
+
+    @PostMapping("/checkKeepLoggedTkn")
+    public ResponseEntity<Boolean> postMethodName(@RequestBody String keepLoggedJsonToken, @RequestHeader("Authorization") String authToken) {
+        JSONObject json = new JSONObject(keepLoggedJsonToken);
+
+        Keep_Logged_Tokens obj = repositoryKeep_Logged_Tokens.findByToken(json.getString("keepLoggedToken")); 
+
+        return obj == null ? ResponseEntity.ok(false) : ResponseEntity.ok(true);
     }
 }
