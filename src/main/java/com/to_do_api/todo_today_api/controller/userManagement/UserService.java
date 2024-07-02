@@ -109,7 +109,7 @@ public class UserService {
     }
 
     @PostMapping("/generateUserTempToken")
-    public ResponseEntity<String> postMethodName(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<String> generateUserTempToken(@RequestHeader("Authorization") String token) {
         token = token.replace("Bearer ", "");
         
         Keep_Logged_Tokens keep_Logged_Tokens = this.repositoryKeep_Logged_Tokens.findByToken(token);
