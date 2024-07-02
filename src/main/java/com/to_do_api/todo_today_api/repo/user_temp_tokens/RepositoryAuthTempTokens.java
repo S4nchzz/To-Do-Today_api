@@ -10,4 +10,5 @@ import org.springframework.stereotype.Repository;
 public interface RepositoryAuthTempTokens extends JpaRepository<User_temp_tokens, String> {
     @Query("SELECT u FROM User_temp_tokens u WHERE u.token = :tkn")
     User_temp_tokens getUserByToken(@Param("tkn") String token);
+    User_temp_tokens findByToken(String token);
 }

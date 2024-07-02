@@ -10,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.to_do_api.todo_today_api.repo.TokenAutoGeneration;
 import com.to_do_api.todo_today_api.repo.auth_api_tokens.RepositoryTokens;
 import com.to_do_api.todo_today_api.repo.keep_logged_tokens.Keep_Logged_Tokens;
 import com.to_do_api.todo_today_api.repo.keep_logged_tokens.RepositoryKeep_Logged_Tokens;
@@ -39,11 +38,8 @@ public class UserService {
 
     @Autowired
     private RepositoryKeep_Logged_Tokens repositoryKeep_Logged_Tokens;
-
-    private final TokenAutoGeneration tokenAutoGeneration;
     
     public UserService () {
-        this.tokenAutoGeneration = TokenAutoGeneration.getInstance();
     }
 
     public boolean localAuth(String token) {
@@ -95,8 +91,7 @@ public class UserService {
         PasswordComplexity passwordComplexity = new PasswordComplexity(user.getSalt(), (String)entry.get("password"));
  
         if (MessageDigest.isEqual(passwordComplexity.getHashedPasswordByte(), user.getPass()))  {
-            String authEachUserToken = tokenAutoGeneration.generateToken();
-            repositoryAuthTempTokens.save(new User_temp_tokens(authEachUserToken, user.getId()));
+            String authEachUserToken = insertIntoUserTempTokens(user.getId());
 
             JSONObject tempUserAuth = new JSONObject();
             tempUserAuth.put("tempUserAuthTkn", authEachUserToken);
@@ -105,6 +100,22 @@ public class UserService {
 
         return ResponseEntity.ok(false);
     }
+
+    private String insertIntoUserTempTokens(int userId) {
+        UUID uuid = UUID.randomUUID();
+        this.repositoryAuthTempTokens.save(new User_temp_tokens(uuid.toString(), userId));
+
+        return uuid.toString();
+    }
+
+    @PostMapping("/generateUserTempToken")
+    public ResponseEntity<String> postMethodName(@RequestBody String userKeepLoggedUserTkn) {
+        Keep_Logged_Tokens keep_Logged_Tokens = this.repositoryKeep_Logged_Tokens.findByToken(userKeepLoggedUserTkn);
+        String uuid = insertIntoUserTempTokens(keep_Logged_Tokens.getUserid());
+
+        return ResponseEntity.ok(uuid.toString());
+    }
+    
 
     @PostMapping("/generateKeepLoggedTkn")
     public ResponseEntity<?> generateKeepLoggedToken (@RequestHeader("Authorization") String token) {
@@ -126,11 +137,21 @@ public class UserService {
     }
 
     @PostMapping("/checkKeepLoggedTkn")
-    public ResponseEntity<Boolean> postMethodName(@RequestBody String keepLoggedJsonToken, @RequestHeader("Authorization") String authToken) {
+    public ResponseEntity<Boolean> checkKeepLogggedTkn(@RequestBody String keepLoggedJsonToken, @RequestHeader("Authorization") String authToken) {
         JSONObject json = new JSONObject(keepLoggedJsonToken);
 
         Keep_Logged_Tokens obj = repositoryKeep_Logged_Tokens.findByToken(json.getString("keepLoggedToken")); 
 
         return obj == null ? ResponseEntity.ok(false) : ResponseEntity.ok(true);
+    }
+
+    @PostMapping("/getUserName")
+    public ResponseEntity<String> getUserName(@RequestBody String body) {
+        JSONObject json = new JSONObject(body);
+
+        User_temp_tokens user_temp_tokens = this.repositoryAuthTempTokens.findByToken(json.getString("userTempToken"));
+        User user = this.repositoryUser.findById(user_temp_tokens.getUserID());
+
+        return ResponseEntity.ok(user.getUsername());
     }
 }
