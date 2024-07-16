@@ -85,7 +85,9 @@ public class UserService {
         User user = repositoryUser.findByUsername((String)entry.get("username"));
         
         if (user == null) {
-            return ResponseEntity.ok(false);
+            JSONObject userExist = new JSONObject();
+            userExist.put("succed", "false");
+            return ResponseEntity.ok(userExist.toString());
         }
 
         PasswordComplexity passwordComplexity = new PasswordComplexity(user.getSalt(), (String)entry.get("password"));
@@ -94,11 +96,14 @@ public class UserService {
             String authEachUserToken = insertIntoUserTempTokens(user.getId());
 
             JSONObject tempUserAuth = new JSONObject();
+            tempUserAuth.put("succed", "true");
             tempUserAuth.put("tempUserAuthTkn", authEachUserToken);
             return ResponseEntity.ok(tempUserAuth.toString());
         }
 
-        return ResponseEntity.ok(false);
+        JSONObject userExist = new JSONObject();
+        userExist.put("succed", "false");
+        return ResponseEntity.ok(userExist.toString());
     }
 
     private String insertIntoUserTempTokens(int userId) {
