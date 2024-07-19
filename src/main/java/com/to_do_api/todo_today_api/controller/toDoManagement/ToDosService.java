@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.to_do_api.todo_today_api.repo.to_dos.RepositoryTo_Dos;
-import com.to_do_api.todo_today_api.repo.to_dos.To_Dos;
-import com.to_do_api.todo_today_api.repo.user_temp_tokens.RepositoryAuthTempTokens;
-import com.to_do_api.todo_today_api.repo.user_temp_tokens.User_temp_tokens;
+import com.to_do_api.todo_today_api.repo.to_dos.To_Do;
+import com.to_do_api.todo_today_api.repo.user_temporal_tokens.RepositoryTemporalTokens;
+import com.to_do_api.todo_today_api.repo.user_temporal_tokens.User_temporal_token;
 
 @RestController
 @RequestMapping("/toDos")
@@ -22,20 +22,20 @@ public class ToDosService {
     private RepositoryTo_Dos repositoryTo_Dos;
 
     @Autowired
-    private RepositoryAuthTempTokens repositoryAuthTempTokens;
+    private RepositoryTemporalTokens repositoryTemporalTokens;
 
     @PostMapping("/getToDos")
     public ResponseEntity<?> getToDos(@RequestBody String body) {
         try {
             JSONObject userToken = new JSONObject(body);
 
-            User_temp_tokens user_temp_tokens = repositoryAuthTempTokens.getUserByToken(userToken.getString("userToken"));
+            User_temporal_token user_temp_tokens = repositoryTemporalTokens.getUserByToken(userToken.getString("userToken"));
 
             if (user_temp_tokens == null) {
                 return ResponseEntity.ok("");
             }
 
-            List<To_Dos> toDoList = repositoryTo_Dos.findByUserid(user_temp_tokens.getUserID());
+            List<To_Do> toDoList = repositoryTo_Dos.findByUserid(user_temp_tokens.getUserID());
             JSONObject allToDosOnJson = generateJsonWithToDos(toDoList);
             return ResponseEntity.ok(allToDosOnJson.toString());
 
@@ -45,15 +45,17 @@ public class ToDosService {
         }
     }
 
-    private JSONObject generateJsonWithToDos(List<To_Dos> list) {
+    private JSONObject generateJsonWithToDos(List<To_Do> list) {
         JSONObject toDosGeneral = new JSONObject();
-        for (To_Dos to_dos : list) {
+        for (To_Do to_dos : list) {
             JSONObject toDo = new JSONObject();
-            toDo.put("User_Id", to_dos.getUserid());
-            toDo.put("Header", to_dos.getHeader());
-            toDo.put("Content", to_dos.getContent());
-            toDo.put("Date", to_dos.getDate());
-            toDo.put("Fav", to_dos.isFav());
+            toDo.put("id", to_dos.getId());
+            toDo.put("userId", to_dos.getUserid());
+            toDo.put("header", to_dos.getHeader());
+            toDo.put("content", to_dos.getContent());
+            toDo.put("date", to_dos.getDate());
+            toDo.put("fav", to_dos.isFav());
+            toDo.put("ended", to_dos.isEnded());
 
             toDosGeneral.put(String.valueOf(to_dos.getId()), toDo);
         }
@@ -61,24 +63,68 @@ public class ToDosService {
         return toDosGeneral;
     }
 
+    // ! Codigo temporal para hacer pruebas
     @PostMapping("/addToDo")
-    public ResponseEntity<Boolean> postMethodName(@RequestBody String token) {
+    public ResponseEntity<String> postMethodName(@RequestBody String token) {
         try {
             JSONObject userToken = new JSONObject(token);
             
-            User_temp_tokens user_temp_tokens = repositoryAuthTempTokens
+            User_temporal_token user_temp_tokens = repositoryTemporalTokens
                     .getUserByToken(userToken.getString("userToken"));
 
             if (user_temp_tokens == null) {
-                return ResponseEntity.ok(false);
+                return ResponseEntity.ok(new JSONObject().put("addToDoSucced", false).toString());
             }
 
-            repositoryTo_Dos.save(new To_Dos(user_temp_tokens.getUserID(), userToken.getString("header"), userToken.getString("content"), userToken.getBoolean("fav")));
-            return ResponseEntity.ok(true);
+            To_Do toDo = new To_Do(user_temp_tokens.getUserID(), userToken.getString("header"), userToken.getString("content"), userToken.getBoolean("fav"), false);
+            repositoryTo_Dos.save(toDo);
+
+            return ResponseEntity.ok(new JSONObject().put("addToDoSucced", true).toString());
         } catch (JSONException e) {
             System.out.println(e.getMessage());
-            //? LOG: Error while new ToDo check token
+            //? LOG: Error while generating the new ToDo check token
         } 
-        return ResponseEntity.ok(false);
+        return ResponseEntity.ok(new JSONObject().put("addToDoSucced", false).toString());
     }
+
+    @PostMapping("/updateToDo")
+    public ResponseEntity<String> updateToDo(@RequestBody String body) {
+        JSONObject toDoNewData = new JSONObject(body);
+        JSONObject jsonResponse = new JSONObject();
+        
+        User_temporal_token user_temp_tokens = repositoryTemporalTokens
+                .getUserByToken(toDoNewData.getString("userToken"));
+
+        if (user_temp_tokens == null) {
+            jsonResponse.put("updated", "false");
+            return ResponseEntity.ok(jsonResponse.toString());
+        }
+        
+        repositoryTo_Dos.deleteById(toDoNewData.getInt("id"));
+        repositoryTo_Dos.save(new To_Do(user_temp_tokens.getUserID(), toDoNewData.getString("header"), toDoNewData.getString("content"), toDoNewData.getBoolean("fav"), false));
+        
+        jsonResponse.put("updated", "true");
+        return ResponseEntity.ok(jsonResponse.toString());
+    }
+
+    @PostMapping("/completeToDo")
+    public ResponseEntity<String> completeToDo(@RequestBody String body) {
+        JSONObject json = new JSONObject(body);
+
+        User_temporal_token user = repositoryTemporalTokens.findByToken(json.getString("userToken"));
+
+        if (user != null) {
+            repositoryTo_Dos.deleteById(json.getInt("id"));
+            repositoryTo_Dos.save(new To_Do(user.getUserID(), json.getString("header"), json.getString("content"), json.getBoolean("fav"), true));
+            
+            JSONObject responseJson = new JSONObject();
+            responseJson.put("toDoCompletedUpdateResult", true);
+            return ResponseEntity.ok(responseJson.toString());
+        }
+
+        JSONObject responseJson = new JSONObject();
+        responseJson.put("toDoCompletedUpdateResult", false);
+        return ResponseEntity.ok(responseJson.toString());
+    }
+    
 }

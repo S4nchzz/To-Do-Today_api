@@ -7,7 +7,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
 @Entity
-public class To_Dos {
+public class To_Do {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -19,24 +19,27 @@ public class To_Dos {
     @Column(insertable = false)
     private String date;
     private Boolean fav;
+    private Boolean ended;
 
-    public To_Dos() {
+    public To_Do() {
     }
 
-    public To_Dos(int userid, String header, String content, Boolean fav) {
+    public To_Do(int userid, String header, String content, Boolean fav, Boolean ended) {
         this.userid = userid;
         this.header = header;
         this.content = content;
         this.fav = fav;
+        this.ended = ended;
     }
 
-    public To_Dos(int id, int userid, String header, String content, String date, Boolean fav) {
+    public To_Do(int id, int userid, String header, String content, String date, Boolean fav, Boolean ended) {
         this.id = id;
         this.userid = userid;
         this.header = header;
         this.content = content;
         this.date = date;
         this.fav = fav;
+        this.ended = ended;
     }
 
     public int getId() {
@@ -81,5 +84,13 @@ public class To_Dos {
 
     public void setFav(Boolean fav) {
         this.fav = fav;
+    }
+
+    public Boolean isEnded() {
+        return ended;
+    }
+
+    public void setEnded(Boolean ended) {
+        this.ended = ended;
     }
 }

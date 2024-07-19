@@ -15,8 +15,8 @@ import com.to_do_api.todo_today_api.repo.keep_logged_tokens.Keep_Logged_Tokens;
 import com.to_do_api.todo_today_api.repo.keep_logged_tokens.RepositoryKeep_Logged_Tokens;
 import com.to_do_api.todo_today_api.repo.user.RepositoryUser;
 import com.to_do_api.todo_today_api.repo.user.User;
-import com.to_do_api.todo_today_api.repo.user_temp_tokens.RepositoryAuthTempTokens;
-import com.to_do_api.todo_today_api.repo.user_temp_tokens.User_temp_tokens;
+import com.to_do_api.todo_today_api.repo.user_temporal_tokens.RepositoryTemporalTokens;
+import com.to_do_api.todo_today_api.repo.user_temporal_tokens.User_temporal_token;
 import com.to_do_api.todo_today_api.userAccount.PasswordComplexity;
 
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,7 +34,7 @@ public class UserService {
     private RepositoryTokens repositoryTokens;
 
     @Autowired
-    private RepositoryAuthTempTokens repositoryAuthTempTokens;
+    private RepositoryTemporalTokens repositoryTemporalTokens;
 
     @Autowired
     private RepositoryKeep_Logged_Tokens repositoryKeep_Logged_Tokens;
@@ -108,7 +108,7 @@ public class UserService {
 
     private String insertIntoUserTempTokens(int userId) {
         UUID uuid = UUID.randomUUID();
-        this.repositoryAuthTempTokens.save(new User_temp_tokens(uuid.toString(), userId));
+        this.repositoryTemporalTokens.save(new User_temporal_token(uuid.toString(), userId));
 
         return uuid.toString();
     }
@@ -129,7 +129,7 @@ public class UserService {
         UUID uuid = UUID.randomUUID();
 
         token = token.replace("Bearer ", "");
-        User_temp_tokens user_temp_tokens = repositoryAuthTempTokens.getUserByToken(token);
+        User_temporal_token user_temp_tokens = repositoryTemporalTokens.getUserByToken(token);
 
         if (user_temp_tokens == null) {
             return ResponseEntity.ok("");
@@ -156,7 +156,7 @@ public class UserService {
     public ResponseEntity<String> getUserName(@RequestBody String body) {
         JSONObject json = new JSONObject(body);
 
-        User_temp_tokens user_temp_tokens = this.repositoryAuthTempTokens.findByToken(json.getString("userTempToken"));
+        User_temporal_token user_temp_tokens = this.repositoryTemporalTokens.findByToken(json.getString("userTempToken"));
         User user = this.repositoryUser.findById(user_temp_tokens.getUserID());
 
         return ResponseEntity.ok(user.getUsername());
