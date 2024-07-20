@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface RepositoryTo_Dos extends JpaRepository<To_Do, Integer>{
-    List<To_Do> findByUserid(int userid);
+public interface RepositoryToDos extends JpaRepository<ToDo, Integer>{
+    List<ToDo> findByUserid(int userid);
     Boolean deleteById(int id);
 }

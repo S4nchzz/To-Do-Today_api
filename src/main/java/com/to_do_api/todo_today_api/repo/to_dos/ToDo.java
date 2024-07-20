@@ -1,13 +1,12 @@
 package com.to_do_api.todo_today_api.repo.to_dos;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
 @Entity
-public class To_Do {
+public class ToDo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -16,23 +15,23 @@ public class To_Do {
     private String header;
     private String content;
 
-    @Column(insertable = false)
     private String date;
     private Boolean fav;
     private Boolean ended;
 
-    public To_Do() {
+    public ToDo() {
     }
 
-    public To_Do(int userid, String header, String content, Boolean fav, Boolean ended) {
+    public ToDo(int userid, String header, String content, String date, Boolean fav, Boolean ended) {
         this.userid = userid;
         this.header = header;
         this.content = content;
+        this.date = date;
         this.fav = fav;
         this.ended = ended;
     }
 
-    public To_Do(int id, int userid, String header, String content, String date, Boolean fav, Boolean ended) {
+    public ToDo(int id, int userid, String header, String content, String date, Boolean fav, Boolean ended) {
         this.id = id;
         this.userid = userid;
         this.header = header;
