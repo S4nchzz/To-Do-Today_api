@@ -1,5 +1,7 @@
 package com.to_do_api.todo_today_api.repo.to_dos;
 
+import org.json.JSONObject;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -39,9 +41,22 @@ public class ToDo {
         this.date = date;
         this.fav = fav;
         this.ended = ended;
+        }
+
+    public JSONObject getJson() {
+        JSONObject json = new JSONObject()
+        .put("id", this.id)
+        .put("userid", this.userid)
+        .put("header", this.header)
+        .put("content", this.content)
+        .put("date", this.date)
+        .put("fav", this.fav)
+        .put("ended", this.ended);
+        
+        return json;
     }
 
-    public int getId() {
+        public int getId() {
         return id;
     }
 

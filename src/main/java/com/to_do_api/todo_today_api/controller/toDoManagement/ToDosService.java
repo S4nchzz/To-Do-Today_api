@@ -75,20 +75,10 @@ public class ToDosService {
                 return ResponseEntity.ok(new JSONObject().put("addToDoSucced", false).toString());
             }
 
-            ToDo toDo = new ToDo(user_temp_tokens.getUserID(), userToken.getString("header"), userToken.getString("content"), userToken.getString("date"), userToken.getBoolean("fav"), userToken.getBoolean("ended"));
-            
+            ToDo toDo = new ToDo(user_temp_tokens.getUserID(), userToken.getString("header"), userToken.getString("content"), userToken.getString("date"), userToken.getBoolean("fav"), userToken.getBoolean("ended"));            
             ToDo providedToDo = repositoryToDos.save(toDo);
-            JSONObject responseStatusAndToDo = new JSONObject()
-            .put("addToDoSucced", true)
-            .put("id", providedToDo.getId())
-            .put("userId", providedToDo.getUserid())
-            .put("header", providedToDo.getHeader())
-            .put("content", providedToDo.getContent())
-            .put("date", providedToDo.getDate())
-            .put("fav", providedToDo.isFav())
-            .put("ended", providedToDo.isEnded());
 
-            return ResponseEntity.ok(responseStatusAndToDo.toString());
+            return ResponseEntity.ok(providedToDo.getJson().put("addToDoSucced", true).toString());
         } catch (JSONException e) {
             System.out.println(e.getMessage());
             //? LOG: Error while generating the new ToDo check token
@@ -110,10 +100,9 @@ public class ToDosService {
         }
         
         repositoryToDos.deleteById(toDoNewData.getInt("id"));
-        repositoryToDos.save(new ToDo(user_temp_tokens.getUserID(), toDoNewData.getString("header"), toDoNewData.getString("content"), toDoNewData.getString("date"), toDoNewData.getBoolean("fav"), false));
-        
-        jsonResponse.put("updated", "true");
-        return ResponseEntity.ok(jsonResponse.toString());
+        ToDo todo = repositoryToDos.save(new ToDo(user_temp_tokens.getUserID(), toDoNewData.getString("header"), toDoNewData.getString("content"), toDoNewData.getString("date"), toDoNewData.getBoolean("fav"), toDoNewData.getBoolean("ended")));
+
+        return ResponseEntity.ok(todo.getJson().put("updated", true).toString());
     }
 
     @PostMapping("/completeToDo")
