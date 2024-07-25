@@ -86,6 +86,21 @@ public class ToDosService {
         return ResponseEntity.ok(new JSONObject().put("addToDoSucced", false).toString());
     }
 
+    @PostMapping("/deleteToDo")
+    public ResponseEntity<String> deleteToDo(@RequestBody String body) {
+        JSONObject json = new JSONObject(body);
+
+        User_temporal_token user = repositoryTemporalTokens.getUserByToken(json.getString("userToken"));
+
+        if (user == null) {
+            return ResponseEntity.ok(new JSONObject().put("deleted", false).toString());
+        }
+
+        repositoryToDos.deleteById(json.getInt("deleteID"));
+
+        return ResponseEntity.ok(new JSONObject().put("deleted", true).toString());
+    }
+
     @PostMapping("/updateToDo")
     public ResponseEntity<String> updateToDo(@RequestBody String body) {
         JSONObject toDoNewData = new JSONObject(body);
