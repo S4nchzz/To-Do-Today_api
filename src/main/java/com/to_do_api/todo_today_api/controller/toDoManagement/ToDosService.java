@@ -29,7 +29,8 @@ public class ToDosService {
         try {
             JSONObject userToken = new JSONObject(body);
 
-            User_temporal_token user_temp_tokens = repositoryTemporalTokens.getUserByToken(userToken.getString("userToken"));
+            User_temporal_token user_temp_tokens = repositoryTemporalTokens
+                    .getUserByToken(userToken.getString("userToken"));
 
             if (user_temp_tokens == null) {
                 return ResponseEntity.ok("");
@@ -67,7 +68,7 @@ public class ToDosService {
     public ResponseEntity<String> addToDo(@RequestBody String token) {
         try {
             JSONObject userToken = new JSONObject(token);
-            
+
             User_temporal_token user_temp_tokens = repositoryTemporalTokens
                     .getUserByToken(userToken.getString("userToken"));
 
@@ -75,14 +76,16 @@ public class ToDosService {
                 return ResponseEntity.ok(new JSONObject().put("addToDoSucced", false).toString());
             }
 
-            ToDo toDo = new ToDo(user_temp_tokens.getUserID(), userToken.getString("header"), userToken.getString("content"), userToken.getString("date"), userToken.getBoolean("fav"), userToken.getBoolean("ended"));            
+            ToDo toDo = new ToDo(user_temp_tokens.getUserID(), userToken.getString("header"),
+                    userToken.getString("content"), userToken.getString("date"), userToken.getBoolean("fav"),
+                    userToken.getBoolean("ended"));
             ToDo providedToDo = repositoryToDos.save(toDo);
 
             return ResponseEntity.ok(providedToDo.getJson().put("addToDoSucced", true).toString());
         } catch (JSONException e) {
             System.out.println(e.getMessage());
-            //? LOG: Error while generating the new ToDo check token
-        } 
+            // ? LOG: Error while generating the new ToDo check token
+        }
         return ResponseEntity.ok(new JSONObject().put("addToDoSucced", false).toString());
     }
 
@@ -105,7 +108,7 @@ public class ToDosService {
     public ResponseEntity<String> updateToDo(@RequestBody String body) {
         JSONObject toDoNewData = new JSONObject(body);
         JSONObject jsonResponse = new JSONObject();
-        
+
         User_temporal_token user_temp_tokens = repositoryTemporalTokens
                 .getUserByToken(toDoNewData.getString("userToken"));
 
@@ -113,9 +116,11 @@ public class ToDosService {
             jsonResponse.put("updated", "false");
             return ResponseEntity.ok(jsonResponse.toString());
         }
-        
+
         repositoryToDos.deleteById(toDoNewData.getInt("id"));
-        ToDo todo = repositoryToDos.save(new ToDo(user_temp_tokens.getUserID(), toDoNewData.getString("header"), toDoNewData.getString("content"), toDoNewData.getString("date"), toDoNewData.getBoolean("fav"), toDoNewData.getBoolean("ended")));
+        ToDo todo = repositoryToDos.save(new ToDo(user_temp_tokens.getUserID(), toDoNewData.getString("header"),
+                toDoNewData.getString("content"), toDoNewData.getString("date"), toDoNewData.getBoolean("fav"),
+                toDoNewData.getBoolean("ended")));
 
         return ResponseEntity.ok(todo.getJson().put("updated", true).toString());
     }
@@ -127,17 +132,35 @@ public class ToDosService {
         User_temporal_token user = repositoryTemporalTokens.findByToken(json.getString("userToken"));
 
         if (user != null) {
-            repositoryToDos.deleteById(json.getInt("id"));
-            repositoryToDos.save(new ToDo(user.getUserID(), json.getString("header"), json.getString("content"), json.getString("date"), json.getBoolean("fav"), true));
-            
-            JSONObject responseJson = new JSONObject();
-            responseJson.put("toDoCompletedUpdateResult", true);
-            return ResponseEntity.ok(responseJson.toString());
+            ToDo todo = repositoryToDos.findById(json.getInt("id"));
+
+            if (todo != null) {
+                todo.setEnded(json.getBoolean("completed"));
+                repositoryToDos.save(todo);
+            }
+
+            return ResponseEntity.ok(new JSONObject().put("toDoCompletedUpdateResult", true).toString());
         }
 
-        JSONObject responseJson = new JSONObject();
-        responseJson.put("toDoCompletedUpdateResult", false);
-        return ResponseEntity.ok(responseJson.toString());
+        return ResponseEntity.ok(new JSONObject().put("toDoCompletedUpdateResult", false).toString());
     }
-    
+
+    @PostMapping("/addFav")
+    public ResponseEntity<String> addFav(@RequestBody String entity) {
+        JSONObject json = new JSONObject(entity.toString());
+
+        User_temporal_token user = repositoryTemporalTokens.findByToken(json.getString("userToken"));
+
+        if (user != null) {
+            ToDo todo = repositoryToDos.findById(json.getInt("id"));
+
+            if (todo != null) {
+                todo.setFav(json.getBoolean("fav"));
+                repositoryToDos.save(todo);
+
+                return ResponseEntity.ok(new JSONObject().put("updated", true).toString());
+            }
+        }
+        return ResponseEntity.ok(new JSONObject().put("updated", false).toString());
+    }
 }

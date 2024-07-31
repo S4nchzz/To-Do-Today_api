@@ -9,4 +9,5 @@ import org.springframework.stereotype.Repository;
 public interface RepositoryToDos extends JpaRepository<ToDo, Integer>{
     List<ToDo> findByUserid(int userid);
     Boolean deleteById(int id);
+    ToDo findById(int id);
 }
