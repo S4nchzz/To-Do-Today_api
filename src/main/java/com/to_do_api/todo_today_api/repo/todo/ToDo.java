@@ -1,4 +1,4 @@
-package com.to_do_api.todo_today_api.repo.to_dos;
+package com.to_do_api.todo_today_api.repo.todo;
 
 import org.json.JSONObject;
 
@@ -6,8 +6,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
+@Table(name = "todo")
 public class ToDo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

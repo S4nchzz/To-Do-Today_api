@@ -1,4 +1,4 @@
-package com.to_do_api.todo_today_api.repo.to_dos;
+package com.to_do_api.todo_today_api.repo.todo;
 
 import java.util.List;
 

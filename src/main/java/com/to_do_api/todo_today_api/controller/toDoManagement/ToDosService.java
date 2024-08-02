@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.to_do_api.todo_today_api.repo.to_dos.RepositoryToDos;
-import com.to_do_api.todo_today_api.repo.to_dos.ToDo;
+import com.to_do_api.todo_today_api.repo.todo.RepositoryToDos;
+import com.to_do_api.todo_today_api.repo.todo.ToDo;
 import com.to_do_api.todo_today_api.repo.user_temporal_tokens.RepositoryTemporalTokens;
 import com.to_do_api.todo_today_api.repo.user_temporal_tokens.User_temporal_token;
 

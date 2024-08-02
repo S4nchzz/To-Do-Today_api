@@ -2,8 +2,10 @@ package com.to_do_api.todo_today_api.repo.user_temporal_tokens;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
+@Table(name = "user_temporal_token")
 public class User_temporal_token {
     @Id
     private String token;

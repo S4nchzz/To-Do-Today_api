@@ -2,8 +2,10 @@ package com.to_do_api.todo_today_api.repo.keep_logged_tokens;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
+@Table(name = "keep_logged_tokens")
 public class Keep_Logged_Tokens {
     @Id
     private String token;
