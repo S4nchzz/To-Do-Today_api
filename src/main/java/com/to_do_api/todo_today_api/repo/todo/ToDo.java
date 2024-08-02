@@ -2,6 +2,7 @@ package com.to_do_api.todo_today_api.repo.todo;
 
 import org.json.JSONObject;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -13,15 +14,28 @@ import jakarta.persistence.Table;
 public class ToDo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private int id;
 
+    @Column(name = "userid")
     private int userid;
+
+    @Column(name = "header")
     private String header;
+
+    @Column(name = "content")
     private String content;
 
+    @Column(name = "date")
     private String date;
+
+    @Column(name = "fav")
     private Boolean fav;
+
+    @Column(name = "ended")
     private Boolean ended;
+
+    @Column(name = "team")
     private String team;
 
     public ToDo() {

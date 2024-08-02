@@ -1,5 +1,6 @@
 package com.to_do_api.todo_today_api.repo.user;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -11,12 +12,26 @@ import jakarta.persistence.Table;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private int id;
+    
+    @Column(name = "username")
     private String username;
+    
+    @Column(name = "salt")
     private String salt;
+    
+    @Column(name = "pass")
     private byte [] pass;
+    
+    @Column(name = "email")
     private String email;
+    
+    @Column(name = "logged_in")
     private boolean logged_in;
+    
+    @Column(name = "ingroup")
+    private boolean ingroup;
 
     public User() {
 
@@ -72,5 +87,13 @@ public class User {
 
     public void setLogged_in(boolean logged_in) {
         this.logged_in = logged_in;
+    }
+
+    public boolean isInGroup() {
+        return this.ingroup;
+    }
+
+    public void setInGroup(boolean ingroup) {
+        this.ingroup = ingroup;
     }
 }

@@ -135,7 +135,7 @@ public class UserService {
             return ResponseEntity.ok("");
         }
 
-        repositoryKeep_Logged_Tokens.save(new Keep_Logged_Tokens(uuid.toString(), user_temp_tokens.getUserID()));
+        repositoryKeep_Logged_Tokens.save(new Keep_Logged_Tokens(uuid.toString(), user_temp_tokens.getUserId()));
         
         JSONObject jsonResponse = new JSONObject();
         jsonResponse.put("KeepLoggedToken", uuid.toString());
@@ -153,12 +153,24 @@ public class UserService {
     }
 
     @PostMapping("/getUserName")
-    public ResponseEntity<String> getUserName(@RequestBody String body) {
-        JSONObject json = new JSONObject(body);
+    public ResponseEntity<String> getUserName(@RequestHeader("Authorization") String token) {
+        token = token.replace("Bearer ", "");
+        User_temporal_token user_temp_tokens = this.repositoryTemporalTokens.findByToken(token);
+        User user = this.repositoryUser.findById(user_temp_tokens.getUserId());
 
-        User_temporal_token user_temp_tokens = this.repositoryTemporalTokens.findByToken(json.getString("userTempToken"));
-        User user = this.repositoryUser.findById(user_temp_tokens.getUserID());
+        return ResponseEntity.ok(new JSONObject().put("username", user.getUsername()).toString());
+    }
 
-        return ResponseEntity.ok(user.getUsername());
+    @PostMapping("/isInGroup")
+    public ResponseEntity<String> isUserInGroup(@RequestHeader("Authorization") String token) {
+        token = token.replace("Bearer ", "");
+        User_temporal_token user_temp_token = repositoryTemporalTokens.findByToken(token);
+
+        if (user_temp_token != null) {
+            User user = repositoryUser.findById(user_temp_token.getUserId());
+            return ResponseEntity.ok(new JSONObject().put("hasGroup", user.isInGroup()).toString());
+        }
+
+        return ResponseEntity.ok(new JSONObject().put("hasGroup", false).toString());
     }
 }

@@ -1,6 +1,7 @@
 package com.to_do_api.todo_today_api.controller.toDoManagement;
 
 import java.util.List;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +38,7 @@ public class ToDosService {
                 return ResponseEntity.ok("");
             }
 
-            List<ToDo> toDoList = repositoryToDos.findByUserid(user_temp_tokens.getUserID());
+            List<ToDo> toDoList = repositoryToDos.findByUserid(user_temp_tokens.getUserId());
             JSONObject allToDosOnJson = generateJsonWithToDos(toDoList);
             return ResponseEntity.ok(allToDosOnJson.toString());
 
@@ -79,7 +80,7 @@ public class ToDosService {
                 return ResponseEntity.ok(new JSONObject().put("addToDoSucced", false).toString());
             }
 
-            ToDo toDo = new ToDo(user_temp_tokens.getUserID(), toDoData.getString("header"),
+            ToDo toDo = new ToDo(user_temp_tokens.getUserId(), toDoData.getString("header"),
                     toDoData.getString("content"), toDoData.getString("date"), toDoData.getBoolean("fav"),
                     toDoData.getBoolean("ended"));
             ToDo providedToDo = repositoryToDos.save(toDo);
@@ -124,7 +125,7 @@ public class ToDosService {
         }
 
         repositoryToDos.deleteById(toDoNewData.getInt("id"));
-        ToDo todo = repositoryToDos.save(new ToDo(user_temp_tokens.getUserID(), toDoNewData.getString("header"),
+        ToDo todo = repositoryToDos.save(new ToDo(user_temp_tokens.getUserId(), toDoNewData.getString("header"),
                 toDoNewData.getString("content"), toDoNewData.getString("date"), toDoNewData.getBoolean("fav"),
                 toDoNewData.getBoolean("ended")));
 
