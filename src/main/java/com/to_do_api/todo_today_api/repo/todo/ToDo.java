@@ -22,6 +22,7 @@ public class ToDo {
     private String date;
     private Boolean fav;
     private Boolean ended;
+    private String team;
 
     public ToDo() {
     }
@@ -35,7 +36,7 @@ public class ToDo {
         this.ended = ended;
     }
 
-    public ToDo(int id, int userid, String header, String content, String date, Boolean fav, Boolean ended) {
+    public ToDo(int id, int userid, String header, String content, String date, Boolean fav, Boolean ended, String team) {
         this.id = id;
         this.userid = userid;
         this.header = header;
@@ -43,6 +44,8 @@ public class ToDo {
         this.date = date;
         this.fav = fav;
         this.ended = ended;
+        this.team = team;
+
         }
 
     public JSONObject getJson() {
@@ -53,7 +56,8 @@ public class ToDo {
         .put("content", this.content)
         .put("date", this.date)
         .put("fav", this.fav)
-        .put("ended", this.ended);
+        .put("ended", this.ended)
+        .put("team", this.team);
         
         return json;
     }
@@ -108,5 +112,13 @@ public class ToDo {
 
     public void setEnded(Boolean ended) {
         this.ended = ended;
+    }
+
+    public String getGroup() {
+        return this.team;
+    }
+
+    public void setGroup(String team) {
+        this.team = team;
     }
 }

@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,12 +26,12 @@ public class ToDosService {
     private RepositoryTemporalTokens repositoryTemporalTokens;
 
     @PostMapping("/getToDos")
-    public ResponseEntity<?> getToDos(@RequestBody String body) {
+    public ResponseEntity<?> getToDos(@RequestHeader("Authorization") String token) {
+        token = token.replace("Bearer ", "");
         try {
-            JSONObject userToken = new JSONObject(body);
 
             User_temporal_token user_temp_tokens = repositoryTemporalTokens
-                    .getUserByToken(userToken.getString("userToken"));
+                    .getUserByToken(token);
 
             if (user_temp_tokens == null) {
                 return ResponseEntity.ok("");
@@ -57,6 +58,7 @@ public class ToDosService {
             toDo.put("date", ToDos.getDate());
             toDo.put("fav", ToDos.isFav());
             toDo.put("ended", ToDos.isEnded());
+            toDo.put("group", ToDos.getGroup());
 
             toDosGeneral.put(String.valueOf(ToDos.getId()), toDo);
         }
@@ -65,20 +67,21 @@ public class ToDosService {
     }
 
     @PostMapping("/addToDo")
-    public ResponseEntity<String> addToDo(@RequestBody String token) {
+    public ResponseEntity<String> addToDo(@RequestBody String values, @RequestHeader("Authorization") String token) {
         try {
-            JSONObject userToken = new JSONObject(token);
+            JSONObject toDoData = new JSONObject(values);
 
+            token = token.replace("Bearer ", "");
             User_temporal_token user_temp_tokens = repositoryTemporalTokens
-                    .getUserByToken(userToken.getString("userToken"));
+                    .getUserByToken(token);
 
             if (user_temp_tokens == null) {
                 return ResponseEntity.ok(new JSONObject().put("addToDoSucced", false).toString());
             }
 
-            ToDo toDo = new ToDo(user_temp_tokens.getUserID(), userToken.getString("header"),
-                    userToken.getString("content"), userToken.getString("date"), userToken.getBoolean("fav"),
-                    userToken.getBoolean("ended"));
+            ToDo toDo = new ToDo(user_temp_tokens.getUserID(), toDoData.getString("header"),
+                    toDoData.getString("content"), toDoData.getString("date"), toDoData.getBoolean("fav"),
+                    toDoData.getBoolean("ended"));
             ToDo providedToDo = repositoryToDos.save(toDo);
 
             return ResponseEntity.ok(providedToDo.getJson().put("addToDoSucced", true).toString());
@@ -90,10 +93,12 @@ public class ToDosService {
     }
 
     @PostMapping("/deleteToDo")
-    public ResponseEntity<String> deleteToDo(@RequestBody String body) {
+    public ResponseEntity<String> deleteToDo(@RequestBody String body, @RequestHeader("Authorization") String token) {
         JSONObject json = new JSONObject(body);
 
-        User_temporal_token user = repositoryTemporalTokens.getUserByToken(json.getString("userToken"));
+        token = token.replace("Bearer ", "");
+
+        User_temporal_token user = repositoryTemporalTokens.getUserByToken(token);
 
         if (user == null) {
             return ResponseEntity.ok(new JSONObject().put("deleted", false).toString());
@@ -105,12 +110,13 @@ public class ToDosService {
     }
 
     @PostMapping("/updateToDo")
-    public ResponseEntity<String> updateToDo(@RequestBody String body) {
+    public ResponseEntity<String> updateToDo(@RequestBody String body, @RequestHeader("Authorization") String token) {
         JSONObject toDoNewData = new JSONObject(body);
         JSONObject jsonResponse = new JSONObject();
 
+        token = token.replace("Bearer ", "");
         User_temporal_token user_temp_tokens = repositoryTemporalTokens
-                .getUserByToken(toDoNewData.getString("userToken"));
+                .getUserByToken(token);
 
         if (user_temp_tokens == null) {
             jsonResponse.put("updated", "false");
@@ -126,10 +132,11 @@ public class ToDosService {
     }
 
     @PostMapping("/completeToDo")
-    public ResponseEntity<String> completeToDo(@RequestBody String body) {
+    public ResponseEntity<String> completeToDo(@RequestBody String body, @RequestHeader("Authorization") String token) {
         JSONObject json = new JSONObject(body);
 
-        User_temporal_token user = repositoryTemporalTokens.findByToken(json.getString("userToken"));
+        token = token.replace("Bearer ", "");
+        User_temporal_token user = repositoryTemporalTokens.findByToken(token);
 
         if (user != null) {
             ToDo todo = repositoryToDos.findById(json.getInt("id"));
@@ -146,10 +153,11 @@ public class ToDosService {
     }
 
     @PostMapping("/addFav")
-    public ResponseEntity<String> addFav(@RequestBody String entity) {
+    public ResponseEntity<String> addFav(@RequestBody String entity, @RequestHeader("Authorization") String token) {
         JSONObject json = new JSONObject(entity.toString());
 
-        User_temporal_token user = repositoryTemporalTokens.findByToken(json.getString("userToken"));
+        token = token.replace("Bearer ", "");
+        User_temporal_token user = repositoryTemporalTokens.findByToken(token);
 
         if (user != null) {
             ToDo todo = repositoryToDos.findById(json.getInt("id"));
