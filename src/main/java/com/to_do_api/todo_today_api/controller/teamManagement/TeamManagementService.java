@@ -69,11 +69,11 @@ public class TeamManagementService {
         
         User_temporal_token user_temporal_token = repositoryTemporalTokens.findByToken(token);
         if (user_temporal_token != null) {
-            User user = repositoryUser.findById(user_temporal_token.getUserId());
+            User user = repositoryUser.findById(user_temporal_token.getUserId());   
 
-            Client_team_association userExist = repositoryClientTeamAssociation.findByUserId(user.getId());
-            if (userExist != null) {
-                return ResponseEntity.ok(new JSONObject().put("association", false).toString());
+            Client_team_association client_team_association = repositoryClientTeamAssociation.findByUserId(user.getId());
+            if (client_team_association != null) {
+                return ResponseEntity.ok(new JSONObject().put("joined", false).toString());
             }
             
             JSONObject teamJson = new JSONObject(body);
@@ -83,10 +83,36 @@ public class TeamManagementService {
             // ? Set user value isInGroup to 1
             user.setInGroup(true);
             repositoryUser.save(user);
-            
-            return ResponseEntity.ok(new JSONObject().put("association", true).toString());
+
+            return ResponseEntity.ok(new JSONObject().put("joined", true).toString());
         }
         
-        return ResponseEntity.ok(new JSONObject().put("association", false).toString());
+        return ResponseEntity.ok(new JSONObject().put("joined", false).toString());
     }
+
+    @PostMapping("/getGroupData")
+    public ResponseEntity<String> getGroupData(@RequestHeader("Authorization") String token) {
+        token = token.replace("Bearer ", "");
+        User_temporal_token user_temporal_token = repositoryTemporalTokens.findByToken(token);
+        Client_team_association client_team_association = repositoryClientTeamAssociation.findByUserId(user_temporal_token.getUserId());
+
+        if (client_team_association == null) {
+            return ResponseEntity.ok(new JSONObject().put("dataExist", false).toString());
+        }
+
+        Teams team = repositoryTeams.findByTeamkey(client_team_association.getTeamKey());
+
+        JSONObject groupData = new JSONObject()
+        .put("dataExist", true)
+        .put("teamKey", team.getTeamkey())
+        .put("title", team.getTitle())
+        .put("description", team.getDescription())
+        .put("administrator", team.getAdministrator())
+        .put("publicGroup", team.isPublicGroup())
+        .put("password", team.getPassword())
+        .put("date", team.getDate());
+
+        return ResponseEntity.ok(groupData.toString());
+    }
+    
 }

@@ -6,6 +6,6 @@ import java.util.List;
 
 @Repository
 public interface RepositoryTeams extends JpaRepository<Teams, String>{
-    List<Teams> findByTeamkey(String teamkey);
+    Teams findByTeamkey(String teamkey);
     List<Teams> findAll();
 }
