@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.to_do_api.todo_today_api.repo.teams.Client_team_association;
 import com.to_do_api.todo_today_api.repo.teams.RepositoryClientTeamAssociation;
 import com.to_do_api.todo_today_api.repo.teams.RepositoryTeams;
-import com.to_do_api.todo_today_api.repo.teams.Teams;
+import com.to_do_api.todo_today_api.repo.teams.Team;
 import com.to_do_api.todo_today_api.repo.user.RepositoryUser;
 import com.to_do_api.todo_today_api.repo.user.User;
 import com.to_do_api.todo_today_api.repo.user_temporal_tokens.RepositoryTemporalTokens;
@@ -45,10 +45,10 @@ public class TeamManagementService {
             return ResponseEntity.ok(new JSONObject().put("responseStatus", false).toString());
         }
 
-        java.util.List<Teams> teamList = repositoryTeams.findAll();
+        java.util.List<Team> teamList = repositoryTeams.findAll();
 
         JSONObject jsonTeams = new JSONObject().put("responseStatus", true);
-        for (Teams teams : teamList) {
+        for (Team teams : teamList) {
             JSONObject team = new JSONObject()
             .put("teamkey", teams.getTeamkey())
             .put("title", teams.getTitle())
@@ -100,7 +100,7 @@ public class TeamManagementService {
             return ResponseEntity.ok(new JSONObject().put("dataExist", false).toString());
         }
 
-        Teams team = repositoryTeams.findByTeamkey(client_team_association.getTeamKey());
+        Team team = repositoryTeams.findByTeamkey(client_team_association.getTeamKey());
 
         JSONObject groupData = new JSONObject()
         .put("dataExist", true)
@@ -115,4 +115,32 @@ public class TeamManagementService {
         return ResponseEntity.ok(groupData.toString());
     }
     
+    @PostMapping("/createNewTeam")
+    public ResponseEntity<String> createNewTeam(@RequestHeader("Authorization") String token, @RequestBody String body) {
+        token = token.replace("Bearer ", "");
+        User_temporal_token user_temporal_token = repositoryTemporalTokens.findByToken(token);
+
+        if (user_temporal_token == null) {
+            return ResponseEntity.ok(new JSONObject().put("newGroupRequest", false).toString());
+        }
+
+        JSONObject newTeamJsonData = new JSONObject(body.toString());
+        String teamEmptyPassword = newTeamJsonData.getString("password");
+
+        if (teamEmptyPassword == null) {
+            teamEmptyPassword = "";
+        }
+
+        Team newTeam = new Team(newTeamJsonData.getString("name"), newTeamJsonData.getString("description"), user_temporal_token.getUserId(), 
+                newTeamJsonData.getBoolean("private"), teamEmptyPassword);
+
+        Team hasBeenSaved = repositoryTeams.save(newTeam);
+        
+        if (hasBeenSaved != null) {
+            return ResponseEntity.ok(new JSONObject().put("newGroupRequest", true).toString());
+        }
+
+        return ResponseEntity.ok(new JSONObject().put("newGroupRequest", false).toString());
+
+    }
 }

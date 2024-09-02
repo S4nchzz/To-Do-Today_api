@@ -1,5 +1,7 @@
 package com.to_do_api.todo_today_api.repo.teams;
 
+import java.util.UUID;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -7,13 +9,13 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "teams")
-public class Teams {
+public class Team {
     @Id
     @Column(name = "teamkey")
     private String teamkey;
     
-    @Column(name = "title")
-    private String title;
+    @Column(name = "name")
+    private String name;
     
     @Column(name = "description")
     private String description;
@@ -30,17 +32,31 @@ public class Teams {
     @Column(name = "date")
     private String date;
 
-    public Teams() {
+    public Team() {
     }
 
-    public Teams(String teamkey, String title, String description, int administrator, boolean publicGroup, String password, String date) {
+    // Default constructor initializing all parameters
+    public Team(String teamkey, String name, String description, int administrator, boolean publicGroup, String password, String date) {
         this.teamkey = teamkey;
-        this.title = title;
+        this.name = name;
         this.description = description;
         this.administrator = administrator;
         this.publicGroup = publicGroup;
         this.password = password;
         this.date = date;
+    }
+
+    // Constructor for a new creation of a team
+    public Team(String name, String description, int administrator, boolean publicGroup, String password) {
+        String uuid = UUID.randomUUID().toString();
+        uuid = uuid.subSequence(0, 4).toString();
+
+        this.teamkey = uuid;
+        this.name = name;
+        this.description = description;
+        this.administrator = administrator;
+        this.publicGroup = publicGroup;
+        this.password = password;
     }
 
     public String getTeamkey() {
@@ -52,11 +68,11 @@ public class Teams {
     }
 
     public String getTitle() {
-        return title;
+        return name;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void setTitle(String name) {
+        this.name = name;
     }
 
     public String getDescription() {
