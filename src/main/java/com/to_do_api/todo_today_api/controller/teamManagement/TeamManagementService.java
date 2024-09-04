@@ -56,7 +56,8 @@ public class TeamManagementService {
             .put("administrator", teams.getAdministrator())
             .put("publicgroup", teams.isPublicGroup())
             .put("password", teams.getPassword())
-            .put("date", teams.getDate());
+            .put("date", teams.getDate())
+            .put("nMembers", repositoryClientTeamAssociation.getMembersByTeamKey(teams.getTeamkey()));
 
             jsonTeams.put(teams.getTeamkey(), team);
         }

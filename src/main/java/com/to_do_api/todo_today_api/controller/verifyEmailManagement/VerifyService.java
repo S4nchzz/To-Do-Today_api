@@ -50,7 +50,6 @@ public class VerifyService {
         repositoryVerifyCodes.save(new Verify_email_codes(verificationCode, user.getEmail()));
 
         // Send email with the code
-
         emailService.sendEmail(user.getEmail(), "Verification Code / To-Do-Today", "CODE: " + verificationCode);
         return ResponseEntity.ok(new JSONObject().put("requestVerificationStatus", true).toString());
     }
