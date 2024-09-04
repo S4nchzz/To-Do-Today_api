@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 
 
+
 @RestController
 @RequestMapping("/user")
 public class UserService {
@@ -173,4 +174,31 @@ public class UserService {
 
         return ResponseEntity.ok(new JSONObject().put("hasGroup", false).toString());
     }
+
+    @PostMapping("/isEmailVerified")
+    public ResponseEntity<String> isEmailVerified(@RequestHeader("Authorization") String token) {
+        token = token.replace("Bearer ", "");
+        User_temporal_token user_temp_token = repositoryTemporalTokens.findByToken(token);
+
+        if (user_temp_token != null) {
+            User user = repositoryUser.findById(user_temp_token.getUserId());
+            return ResponseEntity.ok(new JSONObject().put("isEmailVerified", user.isEmailVerified()).toString());
+        }
+
+        return ResponseEntity.ok(new JSONObject().put("isEmailVerified", false).toString());
+    }
+
+    @PostMapping("/getEmail")
+    public ResponseEntity<String> getEmail(@RequestHeader("Authorization") String token) {
+        token = token.replace("Bearer ", "");
+        User_temporal_token user_temp_token = repositoryTemporalTokens.findByToken(token);
+
+        if (user_temp_token != null) {
+            User user = repositoryUser.findById(user_temp_token.getUserId());
+            return ResponseEntity.ok(new JSONObject().put("email", user.getEmail()).toString());
+        }
+
+        return ResponseEntity.ok(new JSONObject().put("email", "null").toString());
+    }
+    
 }

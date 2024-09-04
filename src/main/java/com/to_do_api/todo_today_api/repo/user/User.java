@@ -26,6 +26,9 @@ public class User {
     
     @Column(name = "email")
     private String email;
+
+    @Column(name = "email_verified")
+    private boolean email_verified;
     
     @Column(name = "logged_in")
     private boolean logged_in;
@@ -37,7 +40,7 @@ public class User {
 
     }
     
-    public User(String username, String salt, byte [] pass, String email, boolean logged_in) {
+    public User(String username, String salt, byte [] pass, String email, boolean email_verified, boolean logged_in) {
         this.username = username;
         this.salt = salt;
         this.pass = pass;
@@ -79,6 +82,14 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public boolean isEmailVerified() {
+        return this.email_verified;
+    }
+
+    public void setEmailVerified(boolean emailVerified) {
+        this.email_verified = emailVerified;
     }
 
     public boolean isLogged_in() {

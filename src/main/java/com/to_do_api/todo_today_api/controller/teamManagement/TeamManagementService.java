@@ -132,7 +132,7 @@ public class TeamManagementService {
         }
 
         Team newTeam = new Team(newTeamJsonData.getString("name"), newTeamJsonData.getString("description"), user_temporal_token.getUserId(), 
-                newTeamJsonData.getBoolean("private"), teamEmptyPassword);
+                    newTeamJsonData.getBoolean("public"), teamEmptyPassword);
 
         Team hasBeenSaved = repositoryTeams.save(newTeam);
         
