@@ -12,4 +12,5 @@ public interface RepositoryClientTeamAssociation extends JpaRepository<Client_te
     Integer getMembersByTeamKey(String teamkey);
 
     java.util.List<Client_team_association> findByTeamkey(String teamkey);
+    
 }
