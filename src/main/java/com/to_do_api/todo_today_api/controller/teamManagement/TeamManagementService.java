@@ -133,7 +133,7 @@ public class TeamManagementService {
         }
 
         Team newTeam = new Team(newTeamJsonData.getString("name"), newTeamJsonData.getString("description"), user_temporal_token.getUserId(), 
-                    newTeamJsonData.getBoolean("public"), teamEmptyPassword);
+                    newTeamJsonData.getBoolean("public"), teamEmptyPassword, newTeamJsonData.getString("date"));
 
         Team hasBeenSaved = repositoryTeams.save(newTeam);
         
@@ -142,6 +142,39 @@ public class TeamManagementService {
         }
 
         return ResponseEntity.ok(new JSONObject().put("newGroupRequest", false).toString());
+    }
 
+    @PostMapping("/getMembers")
+    public ResponseEntity<String> getMembers(@RequestHeader("Authorization") String token, @RequestBody String body) {
+        token = token.replace("Bearer ", "");
+        User_temporal_token user_temporal_token = repositoryTemporalTokens.findByToken(token);
+
+        if (user_temporal_token == null) {
+            return ResponseEntity.ok(new JSONObject().put("foundedMembers", false).toString());
+        }
+
+        java.util.List<Client_team_association> members = repositoryClientTeamAssociation.findByTeamkey(new JSONObject(body).getString("teamKey"));
+
+        int jsonKeyIncrement = 0;
+        JSONObject allMembers = new JSONObject();
+        for (Client_team_association c : members) {
+            User user = repositoryUser.findById(c.getUserId());
+
+            boolean isAdmin = false;
+            if (user.getId() == repositoryTeams.findByTeamkey(c.getTeamKey()).getAdministrator()) {
+                isAdmin = true;
+            }
+
+            boolean isOnline = repositoryUser.findById(c.getUserId()).isLogged_in();
+
+            allMembers.put(String.valueOf(jsonKeyIncrement), new JSONObject()
+            .put("username", user.getUsername())
+            .put("groupAdmin", isAdmin)
+            .put("online", isOnline));
+
+            jsonKeyIncrement++;
+        }
+
+        return ResponseEntity.ok(allMembers.toString());
     }
 }

@@ -201,4 +201,15 @@ public class UserService {
         return ResponseEntity.ok(new JSONObject().put("email", "null").toString());
     }
     
+    @PostMapping("/setOnlineUser")
+    public void postMethodName(@RequestHeader("Authorization") String token) {
+        token = token.replace("Bearer ", "");
+        User_temporal_token user_temp_token = repositoryTemporalTokens.findByToken(token);
+
+        if (user_temp_token != null) {
+            User user = repositoryUser.findById(user_temp_token.getUserId());
+            user.setLogged_in(true);
+            repositoryUser.save(user);
+        }
+    }
 }

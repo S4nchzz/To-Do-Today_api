@@ -10,5 +10,5 @@ public interface RepositoryVerifyCodes extends JpaRepository<Verify_email_codes,
     Verify_email_codes findByCode(int code);
     @Query("SELECT v FROM Verify_email_codes v WHERE v.code = :code AND v.email = :email")
     Verify_email_codes findVerification(@Param("code") int code, @Param("email") String email);
-    
+
 }

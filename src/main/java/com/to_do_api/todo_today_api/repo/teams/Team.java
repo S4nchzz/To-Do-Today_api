@@ -23,7 +23,7 @@ public class Team {
     @Column(name = "administrator")
     private int administrator;
     
-    @Column(name = "PUBLICGROUP")
+    @Column(name = "publicgroup")
     private boolean publicGroup;
     
     @Column(name = "password")
@@ -47,7 +47,7 @@ public class Team {
     }
 
     // Constructor for a new creation of a team
-    public Team(String name, String description, int administrator, boolean publicGroup, String password) {
+    public Team(String name, String description, int administrator, boolean publicGroup, String password, String date) {
         String uuid = UUID.randomUUID().toString();
         uuid = uuid.subSequence(0, 4).toString();
 
@@ -57,6 +57,7 @@ public class Team {
         this.administrator = administrator;
         this.publicGroup = publicGroup;
         this.password = password;
+        this.date = date;
     }
 
     public String getTeamkey() {
