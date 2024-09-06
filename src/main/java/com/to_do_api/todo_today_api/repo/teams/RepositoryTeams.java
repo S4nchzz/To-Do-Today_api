@@ -8,4 +8,5 @@ import java.util.List;
 public interface RepositoryTeams extends JpaRepository<Team, String>{
     Team findByTeamkey(String teamkey);
     List<Team> findAll();
+    Team findByAdministrator(int administrator);
 }

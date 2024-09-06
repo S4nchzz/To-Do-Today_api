@@ -1,4 +1,4 @@
-package com.to_do_api.todo_today_api.controller.userManagement;
+package com.to_do_api.todo_today_api.services.userManagement;
 
 import org.json.JSONException;
 import org.json.JSONObject;

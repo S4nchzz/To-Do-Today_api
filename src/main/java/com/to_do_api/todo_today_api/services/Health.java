@@ -1,4 +1,4 @@
-package com.to_do_api.todo_today_api.controller;
+package com.to_do_api.todo_today_api.services;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;

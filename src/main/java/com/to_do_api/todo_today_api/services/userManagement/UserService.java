@@ -1,11 +1,10 @@
-package com.to_do_api.todo_today_api.controller.userManagement;
+package com.to_do_api.todo_today_api.services.userManagement;
 
 import java.security.MessageDigest;
 import java.util.Map;
 import java.util.UUID;
 
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,6 +16,7 @@ import com.to_do_api.todo_today_api.repo.user.RepositoryUser;
 import com.to_do_api.todo_today_api.repo.user.User;
 import com.to_do_api.todo_today_api.repo.user_temporal_tokens.RepositoryTemporalTokens;
 import com.to_do_api.todo_today_api.repo.user_temporal_tokens.User_temporal_token;
+import com.to_do_api.todo_today_api.services.CheckUserExist;
 import com.to_do_api.todo_today_api.userAccount.PasswordComplexity;
 
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,19 +28,19 @@ import org.springframework.web.bind.annotation.RequestHeader;
 @RestController
 @RequestMapping("/user")
 public class UserService {
-    @Autowired
+    private CheckUserExist checkUser;
     private RepositoryUser repositoryUser;
-
-    @Autowired
     private RepositoryTokens repositoryTokens;
-
-    @Autowired
     private RepositoryTemporalTokens repositoryTemporalTokens;
-
-    @Autowired
     private RepositoryKeep_Logged_Tokens repositoryKeep_Logged_Tokens;
     
-    public UserService () {
+    public UserService (RepositoryUser repositoryUser, RepositoryTokens repositoryTokens, RepositoryTemporalTokens repositoryTemporalTokens, RepositoryKeep_Logged_Tokens repositoryKeep_Logged_Tokens, CheckUserExist checkUserExist) {
+        this.repositoryUser = repositoryUser;
+        this.repositoryTokens = repositoryTokens;
+        this.repositoryTemporalTokens = repositoryTemporalTokens;
+        this.repositoryKeep_Logged_Tokens = repositoryKeep_Logged_Tokens;
+    
+        this.checkUser = checkUserExist;
     }
 
     public boolean localAuth(String token) {
@@ -53,11 +53,7 @@ public class UserService {
     }
 
     @PostMapping("/addUser")
-    public ResponseEntity<Boolean> addUser(@RequestBody String entity, @RequestHeader("Authorization") String token) {
-        if (!localAuth(token)) {
-            return ResponseEntity.ok(false);
-        }
-
+    public ResponseEntity<Boolean> addUser(@RequestBody String entity) {
         System.out.println(entity.toString());
         // Add salt and hashed pass
         JSONObject updatedEntity = new JSONObject(entity);
@@ -79,10 +75,6 @@ public class UserService {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, Object> entry, @RequestHeader("Authorization") String token) {
-        if (!localAuth(token)) {
-            return ResponseEntity.ok(false);
-        }
-
         User user = repositoryUser.findByUsername((String)entry.get("username"));
         
         if (user == null) {
@@ -129,14 +121,13 @@ public class UserService {
     public ResponseEntity<?> generateKeepLoggedToken (@RequestHeader("Authorization") String token) {
         UUID uuid = UUID.randomUUID();
 
-        token = token.replace("Bearer ", "");
-        User_temporal_token user_temp_tokens = repositoryTemporalTokens.getUserByToken(token);
+        User user = checkUser.check(token);
 
-        if (user_temp_tokens == null) {
+        if (user == null) {
             return ResponseEntity.ok("");
         }
 
-        repositoryKeep_Logged_Tokens.save(new Keep_Logged_Tokens(uuid.toString(), user_temp_tokens.getUserId()));
+        repositoryKeep_Logged_Tokens.save(new Keep_Logged_Tokens(uuid.toString(), user.getId()));
         
         JSONObject jsonResponse = new JSONObject();
         jsonResponse.put("KeepLoggedToken", uuid.toString());
@@ -145,7 +136,7 @@ public class UserService {
     }
 
     @PostMapping("/checkKeepLoggedTkn")
-    public ResponseEntity<Boolean> checkKeepLogggedTkn(@RequestBody String keepLoggedJsonToken, @RequestHeader("Authorization") String authToken) {
+    public ResponseEntity<Boolean> checkKeepLogggedTkn(@RequestBody String keepLoggedJsonToken) {
         JSONObject json = new JSONObject(keepLoggedJsonToken);
 
         Keep_Logged_Tokens obj = repositoryKeep_Logged_Tokens.findByToken(json.getString("keepLoggedToken")); 
@@ -155,20 +146,16 @@ public class UserService {
 
     @PostMapping("/getUserName")
     public ResponseEntity<String> getUserName(@RequestHeader("Authorization") String token) {
-        token = token.replace("Bearer ", "");
-        User_temporal_token user_temp_tokens = this.repositoryTemporalTokens.findByToken(token);
-        User user = this.repositoryUser.findById(user_temp_tokens.getUserId());
+        User user = checkUser.check(token);
 
         return ResponseEntity.ok(new JSONObject().put("username", user.getUsername()).toString());
     }
 
     @PostMapping("/isInGroup")
     public ResponseEntity<String> isUserInGroup(@RequestHeader("Authorization") String token) {
-        token = token.replace("Bearer ", "");
-        User_temporal_token user_temp_token = repositoryTemporalTokens.findByToken(token);
+        User user = checkUser.check(token);
 
-        if (user_temp_token != null) {
-            User user = repositoryUser.findById(user_temp_token.getUserId());
+        if (user != null) {
             return ResponseEntity.ok(new JSONObject().put("hasGroup", user.isInGroup()).toString());
         }
 
@@ -177,11 +164,9 @@ public class UserService {
 
     @PostMapping("/isEmailVerified")
     public ResponseEntity<String> isEmailVerified(@RequestHeader("Authorization") String token) {
-        token = token.replace("Bearer ", "");
-        User_temporal_token user_temp_token = repositoryTemporalTokens.findByToken(token);
+        User user = checkUser.check(token);
 
-        if (user_temp_token != null) {
-            User user = repositoryUser.findById(user_temp_token.getUserId());
+        if (user != null) {
             return ResponseEntity.ok(new JSONObject().put("isEmailVerified", user.isEmailVerified()).toString());
         }
 
@@ -190,11 +175,9 @@ public class UserService {
 
     @PostMapping("/getEmail")
     public ResponseEntity<String> getEmail(@RequestHeader("Authorization") String token) {
-        token = token.replace("Bearer ", "");
-        User_temporal_token user_temp_token = repositoryTemporalTokens.findByToken(token);
+        User user = checkUser.check(token);
 
-        if (user_temp_token != null) {
-            User user = repositoryUser.findById(user_temp_token.getUserId());
+        if (user != null) {
             return ResponseEntity.ok(new JSONObject().put("email", user.getEmail()).toString());
         }
 
@@ -203,11 +186,9 @@ public class UserService {
     
     @PostMapping("/setOnlineUser")
     public void postMethodName(@RequestHeader("Authorization") String token) {
-        token = token.replace("Bearer ", "");
-        User_temporal_token user_temp_token = repositoryTemporalTokens.findByToken(token);
+        User user = checkUser.check(token);
 
-        if (user_temp_token != null) {
-            User user = repositoryUser.findById(user_temp_token.getUserId());
+        if (user != null) {
             user.setLogged_in(true);
             repositoryUser.save(user);
         }

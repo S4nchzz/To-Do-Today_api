@@ -1,17 +1,17 @@
-package com.to_do_api.todo_today_api.controller.verifyEmailManagement;
+package com.to_do_api.todo_today_api.services.verifyEmailManagement;
 
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.to_do_api.todo_today_api.repo.user.RepositoryUser;
 import com.to_do_api.todo_today_api.repo.user.User;
-import com.to_do_api.todo_today_api.repo.user_temporal_tokens.RepositoryTemporalTokens;
 import com.to_do_api.todo_today_api.repo.verify_email_codes.RepositoryVerifyCodes;
 import com.to_do_api.todo_today_api.repo.verify_email_codes.Verify_email_codes;
+import com.to_do_api.todo_today_api.services.CheckUserExist;
 import com.to_do_api.todo_today_api.services.emailService.EmailService;
+
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -22,23 +22,22 @@ import java.util.Random;
 @RestController
 @RequestMapping("verifyEmail")
 public class VerifyService {
-    @Autowired
+    private CheckUserExist checkUser;
     private RepositoryVerifyCodes repositoryVerifyCodes;
-
-    @Autowired
-    private RepositoryTemporalTokens repositoryTemporalTokens;
-
-    @Autowired
     private RepositoryUser repositoryUser;
-
-    @Autowired
     private EmailService emailService;
+
+    public VerifyService(RepositoryVerifyCodes repositoryVerifyCodes, RepositoryUser repositoryUser, EmailService emailService, CheckUserExist checkUserExist) {
+        this.repositoryVerifyCodes = repositoryVerifyCodes;
+        this.repositoryUser = repositoryUser;
+        this.emailService = emailService;
+
+        this.checkUser = checkUserExist;
+    }
 
     @PostMapping("/requestVerification")
     public ResponseEntity<String> requestVerification(@RequestHeader("Authorization") String token) {
-        token = token.replace("Bearer ", "");
-
-        User user = repositoryUser.findById(repositoryTemporalTokens.getUserByToken(token).getUserId());
+        User user = checkUser.check(token);
 
         if (user == null) {
             return ResponseEntity.ok(new JSONObject().put("requestVerificationStatus", false).toString());
@@ -56,9 +55,7 @@ public class VerifyService {
 
     @PostMapping("/confirmVerification")
     public ResponseEntity<String> confirmVerification(@RequestHeader("Authorization") String token, @RequestBody String body) {
-        token = token.replace("Bearer ", "");
-
-        User user = repositoryUser.findById(repositoryTemporalTokens.getUserByToken(token).getUserId());
+        User user = checkUser.check(token);
 
         if (user == null) {
             return ResponseEntity.ok(new JSONObject().put("verificationCompletedStatus", false).toString());
