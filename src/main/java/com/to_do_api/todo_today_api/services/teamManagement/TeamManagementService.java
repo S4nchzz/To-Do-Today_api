@@ -14,8 +14,6 @@ import com.to_do_api.todo_today_api.services.CheckUserExist;
 
 import jakarta.persistence.NonUniqueResultException;
 
-import java.util.ArrayList;
-
 import org.json.JSONObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -89,6 +87,25 @@ public class TeamManagementService {
         
         return ResponseEntity.ok(new JSONObject().put("joined", false).toString());
     }
+
+    @PostMapping("/associateUserToPrivateTeam")
+    public ResponseEntity<String> associateUserToPrivateTeam(@RequestHeader("Authorization") String tkn, @RequestBody String body) {
+        User user = checkUser.check(tkn);
+
+        JSONObject group = new JSONObject(body);
+        Team team = repositoryTeams.findByName(group.getString("name"));
+
+        if (user != null && team != null && team.getPassword().equals(group.getString("password"))) {
+            repositoryClientTeamAssociation.save(new Client_team_association(user.getId(), team.getTeamkey()));
+            user.setInGroup(true);
+            repositoryUser.save(user);
+
+            return ResponseEntity.ok(new JSONObject().put("userJoinedToPrivateTeam", true).toString());
+        }
+
+        return ResponseEntity.ok(new JSONObject().put("userJoinedToPrivateTeam", false).toString());
+    }
+    
 
     @PostMapping("/getGroupData")
     public ResponseEntity<String> getGroupData(@RequestHeader("Authorization") String token) {
@@ -271,5 +288,24 @@ public class TeamManagementService {
         }
 
         return ResponseEntity.ok(new JSONObject().put("deleteTeamAction", false).toString());
-    }  
+    } 
+
+    @PostMapping("/kickUser")
+    public ResponseEntity<String> kickUser(@RequestHeader("Authorization") String token, @RequestBody String body) {
+        User user = checkUser.check(token);
+        
+        JSONObject request = new JSONObject(body);
+        User userToDelete = repositoryUser.findByUsername(request.getString("username"));
+        
+        if (user != null && repositoryTeams.findByAdministrator(user.getId()) != null && userToDelete != null) {
+            // User is admin and user to delete exist
+            repositoryClientTeamAssociation.deleteByUserId(userToDelete.getId());
+            userToDelete.setInGroup(false);
+            repositoryUser.save(userToDelete);
+            
+            return ResponseEntity.ok(new JSONObject().put("userKicked", true).toString());
+        }
+
+        return ResponseEntity.ok(new JSONObject().put("userKicked", false).toString());
+    }
 }

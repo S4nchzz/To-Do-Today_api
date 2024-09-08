@@ -15,13 +15,14 @@ import com.to_do_api.todo_today_api.repo.todo.RepositoryToDos;
 import com.to_do_api.todo_today_api.repo.todo.ToDo;
 import com.to_do_api.todo_today_api.repo.user.User;
 import com.to_do_api.todo_today_api.services.CheckUserExist;
+
 @RestController
 @RequestMapping("/toDos")
 public class ToDosService {
     private final CheckUserExist checkUser;
     private RepositoryToDos repositoryToDos;
 
-    public ToDosService (RepositoryToDos repositoryToDos, CheckUserExist checkUserExist) {
+    public ToDosService(RepositoryToDos repositoryToDos, CheckUserExist checkUserExist) {
         this.checkUser = checkUserExist;
 
         this.repositoryToDos = repositoryToDos;
