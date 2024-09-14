@@ -3,6 +3,8 @@ package com.to_do_api.todo_today_api.services.teamManagement;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.to_do_api.todo_today_api.repo.teamToDo.RepositoryTeam_ToDo;
+import com.to_do_api.todo_today_api.repo.teamToDo.Team_ToDo;
 import com.to_do_api.todo_today_api.repo.teams.Client_team_association;
 import com.to_do_api.todo_today_api.repo.teams.RepositoryClientTeamAssociation;
 import com.to_do_api.todo_today_api.repo.teams.RepositoryTeams;
@@ -28,11 +30,13 @@ public class TeamManagementService {
     private RepositoryUser repositoryUser;
     private RepositoryTeams repositoryTeams;
     private RepositoryClientTeamAssociation repositoryClientTeamAssociation;
+    private RepositoryTeam_ToDo repositoryTeam_ToDo;
 
-    public TeamManagementService(RepositoryUser repositoryUser, RepositoryTeams repositoryTeams, RepositoryTemporalTokens repositoryTemporalTokens, RepositoryClientTeamAssociation repositoryClientTeamAssociation, CheckUserExist checkUserExist) {
+    public TeamManagementService(RepositoryUser repositoryUser, RepositoryTeams repositoryTeams, RepositoryTemporalTokens repositoryTemporalTokens, RepositoryClientTeamAssociation repositoryClientTeamAssociation, RepositoryTeam_ToDo repositoryTeam_ToDo, CheckUserExist checkUserExist) {
         this.repositoryUser = repositoryUser;
         this.repositoryTeams = repositoryTeams;
         this.repositoryClientTeamAssociation = repositoryClientTeamAssociation;
+        this.repositoryTeam_ToDo = repositoryTeam_ToDo;
 
         this.checkUser = checkUserExist;
     }
@@ -260,11 +264,7 @@ public class TeamManagementService {
         User user = checkUser.check(token);
 
         if (user != null && repositoryClientTeamAssociation.getMembersByTeamKey(repositoryTeams.findByAdministrator(user.getId()).getTeamkey()) == 1) {
-            Client_team_association toDelete = repositoryClientTeamAssociation.findByUserId(user.getId());
-            repositoryClientTeamAssociation.deleteById(toDelete.getId());
-            repositoryTeams.deleteById(toDelete.getTeamKey());
-            user.setInGroup(false);
-            repositoryUser.save(user);
+            deleteInCascadeForTeam(repositoryClientTeamAssociation.findByUserId(user.getId()).getTeamKey());
         }
     }
 
@@ -274,21 +274,32 @@ public class TeamManagementService {
 
         JSONObject delRequest = new JSONObject(body);
         if (user != null && repositoryTeams.findByAdministrator(user.getId()) != null) {
-            java.util.List<Client_team_association> clientTeamAssociationList = repositoryClientTeamAssociation.findByTeamkey(delRequest.getString("teamKey"));
-
-            for (Client_team_association c: clientTeamAssociationList) {
-                repositoryClientTeamAssociation.deleteById(c.getId());
-                User u = repositoryUser.findById(c.getUserId());
-                u.setInGroup(false);
-                repositoryUser.save(u);
-            }
-
-            repositoryTeams.deleteById(delRequest.getString("teamKey"));
+            deleteInCascadeForTeam(delRequest.getString("teamKey"));
             return ResponseEntity.ok(new JSONObject().put("deleteTeamAction", true).toString());
         }
 
         return ResponseEntity.ok(new JSONObject().put("deleteTeamAction", false).toString());
-    } 
+    }
+
+    private void deleteInCascadeForTeam(String teamkey) {
+        // Delete clientTeamAssociation
+        java.util.List<Client_team_association> clientTeamAssociationList = repositoryClientTeamAssociation.findByTeamkey(teamkey);
+
+        for (Client_team_association c : clientTeamAssociationList) {
+            repositoryClientTeamAssociation.deleteById(c.getId());
+            User u = repositoryUser.findById(c.getUserId());
+            u.setInGroup(false);
+            repositoryUser.save(u);
+        }
+
+        java.util.List<Team_ToDo> teamToDoList = repositoryTeam_ToDo.findByTeamkey(teamkey);
+
+        for (Team_ToDo todo : teamToDoList) {
+            repositoryTeam_ToDo.deleteById(todo.getId());
+        }
+
+        repositoryTeams.deleteById(teamkey);
+    }
 
     @PostMapping("/kickUser")
     public ResponseEntity<String> kickUser(@RequestHeader("Authorization") String token, @RequestBody String body) {
